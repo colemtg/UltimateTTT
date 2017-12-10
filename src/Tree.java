@@ -3,9 +3,9 @@ import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 import java.util.*;
 
 public class Tree {
-    private HashMap<Integer, State> startPoints = new HashMap<>();
-    private HashMap<Integer, State> endPoints = new HashMap<>();
-    private HashMap<Integer, State> nodes = new HashMap<>();
+    private HashSet<Integer> startPoints = new HashSet<>();
+    private HashSet<Integer> endPoints = new HashSet<>();
+    private static HashMap<Integer, State> nodes = new HashMap<>();
 
     public void addStartPoints(State input) {
         //System.out.println("Adding start point:");
@@ -27,7 +27,7 @@ public class Tree {
             //input.printBoard();
             //System.out.println("Hashcode: " + input.getGoodHashCode());
             nodes.put(input.getGoodHashCode(), input);
-            startPoints.put(input.getGoodHashCode(), input);
+            startPoints.add(input.getGoodHashCode());
         }
     }
 
@@ -48,7 +48,7 @@ public class Tree {
             nodes.get(input.getGoodHashCode()).incrementCount();
         } else {
             nodes.put(input.getGoodHashCode(), input);
-            endPoints.put(input.getGoodHashCode(), input);
+            endPoints.add(input.getGoodHashCode());
         }
     }
 
@@ -78,39 +78,39 @@ public class Tree {
 
     }
 
-    public HashMap<Integer, State> getStartPoints() {
+    public HashSet<Integer> getStartPoints() {
         return startPoints;
     }
 
-    public HashMap<Integer, State> getEndPoints() {
+    public HashSet<Integer> getEndPoints() {
         return endPoints;
     }
 
-    public HashMap<Integer, State> getNodes() {
+    public static HashMap<Integer, State> getNodes() {
         return nodes;
     }
 
     public void printStartingStates()
     {
-        Iterator<Map.Entry<Integer, State>> it = startPoints.entrySet().iterator();
+        Iterator<Integer> it = startPoints.iterator();
         System.out.println("Starting states:");
         while(it.hasNext())
         {
-            Map.Entry<Integer, State> next = it.next();
-            next.getValue().printBoard();
-            System.out.println(next.getKey());
+            Integer next = it.next();
+            nodes.get(next).printBoard();
+            System.out.println(next);
             System.out.println();
         }
     }
 
     public void printEndingStates()
     {
-        Iterator<Map.Entry<Integer, State>> it = endPoints.entrySet().iterator();
+        Iterator<Integer> it = endPoints.iterator();
         System.out.println("Ending states:");
         while(it.hasNext())
         {
-            Map.Entry<Integer, State> next = it.next();
-            next.getValue().printBoard();
+            Integer next = it.next();
+            nodes.get(next).printBoard();
             System.out.println();
         }
     }
@@ -130,17 +130,17 @@ public class Tree {
     {
         HashSet<Integer> goneTo = new HashSet<>();
         PriorityQueue<State> queue = new PriorityQueue<>();
-        Iterator<Map.Entry<Integer, State>> it = endPoints.entrySet().iterator();
+        Iterator<Integer> it = endPoints.iterator();
         while(it.hasNext())
         {
-            Map.Entry<Integer, State> next = it.next();
-            Iterator<Map.Entry<Integer, State>> it4 = next.getValue().getPreviousStates().entrySet().iterator();
+            Integer next = it.next();
+            Iterator<Integer> it4 = nodes.get(next).getPreviousStates().iterator();
             while(it4.hasNext())
             {
-                Map.Entry<Integer, State> next2 = it4.next();
-                queue.add(nodes.get(next2.getValue().getGoodHashCode()));
+                Integer next2 = it4.next();
+                queue.add(nodes.get(Tree.getNodes().get(next2).getGoodHashCode()));
             }
-            goneTo.add(next.getValue().getGoodHashCode());
+            goneTo.add(nodes.get(next).getGoodHashCode());
         }
         while(!queue.isEmpty())
         {
@@ -153,7 +153,7 @@ public class Tree {
                 double tempO=0;
                 double tempX=0;
                 double totCount=0;
-                Iterator<Map.Entry<Integer, State>> it2 = current.getNextStates().entrySet().iterator();
+                Iterator<Integer> it2 = current.getNextStates().iterator();
                 /*
                 if(current.getNextStates().size()>1)
                 {
@@ -163,7 +163,7 @@ public class Tree {
                 */
                 while(it2.hasNext())
                 {
-                    Map.Entry<Integer, State> next = it2.next();
+                    Integer next = it2.next();
                     /*
                     if(current.getNextStates().size()>1)
                     {
@@ -174,9 +174,9 @@ public class Tree {
                         System.out.println("Count: " + next.getValue().getCount());
                     }
                     */
-                    tempO=tempO+(next.getValue().getOWinRate()*next.getValue().getCount());
-                    tempX=tempX+(next.getValue().getXWinRate()*next.getValue().getCount());
-                    totCount=totCount+next.getValue().getCount();
+                    tempO=tempO+(Tree.getNodes().get(next).getOWinRate()*Tree.getNodes().get(next).getCount());
+                    tempX=tempX+(Tree.getNodes().get(next).getXWinRate()*Tree.getNodes().get(next).getCount());
+                    totCount=totCount+Tree.getNodes().get(next).getCount();
                 }
                 /*
                 if(totCount!=1)
@@ -190,28 +190,28 @@ public class Tree {
                 current.setOWinRate(tempO/totCount);
                 current.setXWinRate(tempX/totCount);
 
-                Iterator<Map.Entry<Integer, State>> it3 = current.getPreviousStates().entrySet().iterator();
+                Iterator<Integer> it3 = current.getPreviousStates().iterator();
                 while(it3.hasNext())
                 {
-                    Map.Entry<Integer, State> next = it3.next();
-                    queue.add(nodes.get(next.getValue().getGoodHashCode()));
+                    Integer next = it3.next();
+                    queue.add(nodes.get(Tree.getNodes().get(next).getGoodHashCode()));
                 }
 
             }
         }
-        State temp = new State(new int[9][9]);
+        State temp = new State(new char[9][9]);
         addNode(temp);
-        Iterator<Map.Entry<Integer, State>> it6 = startPoints.entrySet().iterator();
+        Iterator<Integer> it6 = startPoints.iterator();
         double tempO=0;
         double tempX=0;
         double totCount=0;
         while(it6.hasNext())
         {
-            Map.Entry<Integer, State> next = it6.next();
-            temp.addNextState(next.getValue());
-            tempO=tempO+(next.getValue().getOWinRate()*next.getValue().getCount());
-            tempX=tempX+(next.getValue().getXWinRate()*next.getValue().getCount());
-            totCount=totCount+next.getValue().getCount();
+            Integer next = it6.next();
+            temp.addNextState(nodes.get(next));
+            tempO=tempO+(nodes.get(next).getOWinRate()*nodes.get(next).getCount());
+            tempX=tempX+(nodes.get(next).getXWinRate()*nodes.get(next).getCount());
+            totCount=totCount+nodes.get(next).getCount();
         }
         nodes.get(temp.getGoodHashCode()).setOWinRate(tempO/totCount);
         nodes.get(temp.getGoodHashCode()).setXWinRate(tempX/totCount);
@@ -219,4 +219,5 @@ public class Tree {
         //temp.setOWinRate(tempO/totCount);
         //temp.setXWinRate(tempX/totCount);
     }
+
 }

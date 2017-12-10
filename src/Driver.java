@@ -10,7 +10,7 @@ public class Driver {
         //State startingState = new State(new int[9][9]);
 
         State[] states = new State[82];
-        states[0] = new State(new int[9][9]);
+        states[0] = new State(new char[9][9]);
 
 
 
@@ -41,18 +41,46 @@ public class Driver {
             playerO=0;
         }
         int targetBox=-1;
-        int[] doneBoxes = new int[9];
+        char[] doneBoxes = new char[9];
         boolean invalid;
         for (int moves=1; moves<81+1; moves++)
         {
             invalid=true;
-            if (tree.getNodes().containsKey(states[moves - 1].getGoodHashCode()))
+            if (Tree.getNodes().containsKey(states[moves - 1].getGoodHashCode()))
             {
-                tree.getNodes().get(states[moves-1].getGoodHashCode()).printNextStates();
-                if(moves>2)
+                double maxX=0;
+                Integer codeX=0;
+                double maxO=0;
+                Integer codeO=0;
+                //Tree.getNodes().get(states[moves-1].getGoodHashCode()).printNextStates();
+               // if(moves>1)
+                //{
+                Iterator<Integer> it = Tree.getNodes().get(states[moves - 1].getGoodHashCode()).getNextStates().iterator();
+                while (it.hasNext())
                 {
-                    tree.getNodes().get(states[moves-1].getGoodHashCode()).printNextStates();
+                    Integer next = it.next();
+                    if (moves % 2 == 1 && Tree.getNodes().get(next).getXWinRate() > maxX) {
+                        maxX = Tree.getNodes().get(next).getXWinRate();
+                        codeX = next;
+                    }
+                    if (moves % 2 == 0 && Tree.getNodes().get(next).getOWinRate() > maxO) {
+                        maxO = Tree.getNodes().get(next).getOWinRate();
+                        codeO = next;
+                    }
                 }
+                if(moves % 2 == 0) //O
+                {
+                    System.out.println("best move:");
+                    Tree.getNodes().get(codeO).printBoard();
+                    System.out.println("O winrate: " + Tree.getNodes().get(codeO).getOWinRate());
+                }
+                if(moves % 2 == 1) //X
+                {
+                    System.out.println("best move:");
+                    Tree.getNodes().get(codeX).printBoard();
+                    System.out.println("X winrate: " + Tree.getNodes().get(codeX).getXWinRate());
+                }
+                //}
             }
             else
             {
@@ -82,7 +110,7 @@ public class Driver {
 
                 else
                 {
-                    int[][] temp = states[moves-1].getBoard();
+                    char[][] temp = states[moves-1].getBoard();
                     if(moves%2==0) temp[row][col]= 2;
                     else temp[row][col] = 1;
                     states[moves] = new State(temp);
@@ -95,7 +123,7 @@ public class Driver {
                     }
 
                     int k=0;
-                    int[][]checkWinner = new int[3][3];
+                    char[][]checkWinner = new char[3][3];
                     for(int i=0; i<3; i++)
                     {
                         for(int j=0; j<3; j++)
@@ -136,14 +164,14 @@ public class Driver {
             }
         }
     }
-    public static int boxDone(int row, int col, int[][] state)
+    public static char boxDone(int row, int col, char[][] state)
     {
         return isWinner(box(whatBox(row,col),state));
     }
     //0 for no, 2 for O, 1 for X
-    public static int isWinner(int box[][])
+    public static char isWinner(char box[][])
     {
-        int status=0;
+        char status=0;
         /*
         System.out.println("across");
         System.out.println(box[0][0] + " " + box[0][1] + " " + box[0][2]);
@@ -227,10 +255,10 @@ public class Driver {
 
         return box;
     }
-    public static int[][] box(int box,int[][] state)
+    public static char[][] box(int box,char[][] state)
     {
         int rowS=0,colS=0;
-        int[][] output=new int[3][3];
+        char[][] output=new char[3][3];
 
         if(box == 0)
         {
@@ -332,11 +360,11 @@ public class Driver {
         int totalmovess=0;
         for (int times = 0; times < n; times++) {
             State[] states = new State[82];
-            states[0] = new State(new int[9][9]);
+            states[0] = new State(new char[9][9]);
 
             int row, col;
             int targetBox = -1;
-            int[] doneBoxes = new int[9];
+            char[] doneBoxes = new char[9];
             boolean invalid;
             int stop =0;
             for (int moves = 1; moves < 81 + 1; moves++) {
@@ -354,7 +382,7 @@ public class Driver {
                     tree.addNode(states[moves-1]);
                     //System.out.println("Checking node in hashmap correct:");
                     //tree.getNodes().get(states[moves-1].getGoodHashCode()).printBoard();
-                    tree.getNodes().get(states[moves-1].getGoodHashCode()).addPreviousState(states[moves-2]);
+                    Tree.getNodes().get(states[moves-1].getGoodHashCode()).addPreviousState(states[moves-2]);
                     //states[moves-1].addPreviousState(states[moves-2]);
                 }
 
@@ -379,8 +407,8 @@ public class Driver {
                     else {
                         //int[][] temp = new int[states[moves-1].getBoard().length][states[moves-1].getBoard()[0].length];
                         //states[moves-1].printBoard();
-                        int[][] temp = states[moves-1].getBoard();
-                        int[][] tempCopy = new int[9][9];
+                        char[][] temp = states[moves-1].getBoard();
+                        char[][] tempCopy = new char[9][9];
 
                         //copy into temp
 
@@ -402,7 +430,7 @@ public class Driver {
                         doneBoxes[whatBox(row, col)] = boxDone(row, col, states[moves - 1].getBoard());
 
                         int k = 0;
-                        int[][] checkWinner = new int[3][3];
+                        char[][] checkWinner = new char[3][3];
                         for (int i = 0; i < 3; i++) {
                             for (int j = 0; j < 3; j++) {
                                 checkWinner[i][j] = doneBoxes[k++];
@@ -413,9 +441,9 @@ public class Driver {
                             //System.out.println("Moves5: " + moves);
                             //add states[moves] to tree and that O won
                             tree.addEndingPoint(states[moves]);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).addPreviousState(states[moves-1]);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).setOWinRate(1);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).setXWinRate(0);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).addPreviousState(states[moves-1]);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).setOWinRate(1);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).setXWinRate(0);
                             //states[moves].addPreviousState(states[moves-1]);
                             //states[moves].setOWinRate(1);
                             //states[moves].setXWinRate(0);
@@ -429,9 +457,9 @@ public class Driver {
                             //System.out.println("Moves3: " + moves);
                             //add states[moves] to tree and that X won
                             tree.addEndingPoint(states[moves]);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).addPreviousState(states[moves-1]);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).setOWinRate(0);
-                            tree.getNodes().get(states[moves].getGoodHashCode()).setXWinRate(1);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).addPreviousState(states[moves-1]);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).setOWinRate(0);
+                            Tree.getNodes().get(states[moves].getGoodHashCode()).setXWinRate(1);
                             //states[moves].addPreviousState(states[moves-1]);
                             //states[moves].setOWinRate(0);
                             //states[moves].setXWinRate(1);
@@ -455,7 +483,7 @@ public class Driver {
             {
                 //states[i].printBoard();
                 //System.out.println();
-                tree.getNodes().get(states[i].getGoodHashCode()).addNextState(states[i+1]);
+                Tree.getNodes().get(states[i].getGoodHashCode()).addNextState(states[i+1]);
                 //states[i].addNextState(states[i+1]);
                 //states[i].printNextStates();
             }
@@ -484,7 +512,7 @@ public class Driver {
 
 
 
-           // if(times%1000000==0) System.out.println(times);
+            if((times+1)%1000==0) System.out.println(times);
         }
         tree.assignRate();
 
@@ -524,7 +552,7 @@ public class Driver {
         //tree.printStartingStates();
 
         System.out.println("total moves: " + totalmovess);
-        System.out.println("number of nodes: " + tree.getNodes().size());
+        System.out.println("number of nodes: " + Tree.getNodes().size());
         System.out.println("Average moves in " + n + " games: " + (double)totalmovess/n);
 
         System.out.println("X won " + numXwins + " games: " + 100*(double)numXwins/n + "%");

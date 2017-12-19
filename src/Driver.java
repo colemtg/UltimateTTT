@@ -5,8 +5,8 @@ public class Driver {
     public static void main (String args[])
     {
         Scanner input = new Scanner(System.in);
-        //System.out.println("enter number of simulations:");
-        //Tree tree = runTests(input.nextInt());
+        System.out.println("enter number of simulations:");
+        Tree tree = runTests(input.nextInt());
 
         //State startingState = new State(new int[9][9]);
 
@@ -48,7 +48,7 @@ public class Driver {
         {
             invalid=true;
             //if (Tree.getNodes().containsKey(states[moves - 1].getGoodHashCode()))
-            /*
+
             if (Tree.getNodes().containsKey(State.computeHashCode(previous)))
             {
                 double maxX=0;
@@ -76,14 +76,16 @@ public class Driver {
                 {
                     System.out.println("best move:");
                     //Tree.getNodes().get(codeO).printBoard();
-                    State.printBoard(Tree.getNodes().get(codeO).getBoard());
+                    //System.out.println(Tree.getNodes().get(codeO).getGoodHashCode());
+                    System.out.println(codeO);
                     System.out.println("O winrate: " + Tree.getNodes().get(codeO).getOWinRate());
                 }
                 if(moves % 2 == 1) //X
                 {
                     System.out.println("best move:");
                     //Tree.getNodes().get(codeX).printBoard();
-                    State.printBoard(Tree.getNodes().get(codeO).getBoard());
+                    //System.out.println(Tree.getNodes().get(codeX).getGoodHashCode());
+                    System.out.println(codeX);
                     System.out.println("X winrate: " + Tree.getNodes().get(codeX).getXWinRate());
                 }
                 //}
@@ -92,7 +94,7 @@ public class Driver {
             {
                 System.out.println("new state");
             }
-             */
+
             //states[moves-1].printBoard();
                 State.printBoard(previous);
             while (invalid) {
@@ -270,7 +272,7 @@ public class Driver {
     {
         int rowS=0,colS=0;
         int[][] output=new int[3][3];
-        System.out.println("box: " + box);
+        //System.out.println("box: " + box);
 
         if(box == 0)
         {
@@ -326,6 +328,7 @@ public class Driver {
                 output[i%3][j%3]=state[i][j];
             }
         }
+        /*
         System.out.println("col start = " + colS);
         System.out.println("row start = " + rowS);
         for(int i=0; i<output.length; i++)
@@ -336,6 +339,7 @@ public class Driver {
             }
             System.out.println();
         }
+        */
 
         return output;
     }
@@ -374,6 +378,9 @@ public class Driver {
             State[] states = new State[82];
             states[0] = new State(new int[9][9]);
 
+            int[][] previous = new int[9][9];
+            int[][] current = new int[9][9];
+
             int row, col;
             int targetBox = -1;
             int[] doneBoxes = new int[9];
@@ -404,42 +411,34 @@ public class Driver {
                     row = getRow(targetBox);
                     col = getCol(targetBox);
 
-                    if (col > 8 || row > 8 || states[moves - 1].getBoard()[row][col] != 0 ||
+                    if (col > 8 || row > 8 || previous[row][col] != 0 ||
                             !inBox(targetBox, row, col) || doneBoxes[whatBox(row, col)] != 0) {
-                        /*
-                        for(int i=0; i<doneBoxes.length; i++)
-                        {
-                            System.out.println("Box " + (i+1) + " = " + (doneBoxes[i] == 2 ? "O" : doneBoxes[i] == 1 ? "X" : ""));
-                        }
-                        System.out.println("Target box: " + targetBox);
-                        states[moves-1].printBoard();
-                        System.out.println();
-                        */
                     }
                     else {
                         //int[][] temp = new int[states[moves-1].getBoard().length][states[moves-1].getBoard()[0].length];
                         //states[moves-1].printBoard();
-                        int[][] temp = states[moves-1].getBoard();
-                        int[][] tempCopy = new int[9][9];
+
+                        //int[][] temp = states[moves-1].getBoard();
+                        //int[][] tempCopy = new int[9][9];
 
                         //copy into temp
 
-                        for (int i = 0; i < temp.length; i++) {
+                        for (int i = 0; i < previous.length; i++) {
 
-                            for (int j = 0; j < temp[i].length; j++) {
-                                tempCopy[i][j] = temp[i][j];
+                            for (int j = 0; j < previous[i].length; j++) {
+                                current[i][j] = previous[i][j];
                             }
                         }
 
 
 
                         //System.out.println("Moves: " + moves);
-                        if (moves % 2 == 0) temp[row][col] = 2;
-                        else temp[row][col] = 1;
-                        states[moves] = new State(temp);
+                        if (moves % 2 == 0) current[row][col] = 2;
+                        else current[row][col] = 1;
+                        states[moves] = new State(current);
                         invalid = false;
                         targetBox = nextBox(row, col);
-                        doneBoxes[whatBox(row, col)] = boxDone(row, col, states[moves - 1].getBoard());
+                        doneBoxes[whatBox(row, col)] = boxDone(row, col, current);
 
                         int k = 0;
                         int[][] checkWinner = new int[3][3];
@@ -448,7 +447,9 @@ public class Driver {
                                 checkWinner[i][j] = doneBoxes[k++];
                             }
                         }
-                        states[moves-1].setBoard(tempCopy);
+
+                        //states[moves-1].setBoard(tempCopy);
+
                         if (isWinner(checkWinner) == 2) {
                             //System.out.println("Moves5: " + moves);
                             //add states[moves] to tree and that O won
@@ -488,6 +489,13 @@ public class Driver {
                         }
                     }
                 }
+                for(int i=0; i<previous.length; i++)
+                {
+                    for(int j=0; j<previous[0].length; j++)
+                    {
+                        previous[i][j]=current[i][j];
+                    }
+                }
 
             }
             //Add next Nodes up to one less
@@ -501,26 +509,8 @@ public class Driver {
             }
 
            // Iterator<Map.Entry<Integer, State>> it = tree.getEndPoints().entrySet().iterator();
-            /*
-            while(it.hasNext())
-            {
-                Map.Entry<Integer, State> next = it.next();
-                System.out.println("End state:");
-                next.getValue().printBoard();
-                next.getValue().printPreviousStates();
-            }
-            */
 
-            /*
-            System.out.println("Printing moves from hashMap: ");
-            for(int i=1; i<stop+1; i++)
-            {
-                tree.getNodes().get(states[i].getGoodHashCode()).printBoard();
-                System.out.println("XWin rate: " + tree.getNodes().get(states[i].getGoodHashCode()).getXWinRate());
-                System.out.println("OWin rate: " + tree.getNodes().get(states[i].getGoodHashCode()).getOWinRate());
-                System.out.println();
-            }
-            */
+
 
 
 
@@ -528,44 +518,17 @@ public class Driver {
         }
         tree.assignRate();
 
-        /*
-         Iterator<Map.Entry<Integer, State>> it = tree.getNodes().entrySet().iterator();
-            System.out.println("Number of unique boards:" + tree.getNodes().size());
-            while(it.hasNext())
-            {
-                Map.Entry<Integer, State> next = it.next();
-
-                if((next.getValue().getXWinRate()>0 && next.getValue().getXWinRate()<1)  ||
-                        (next.getValue().getOWinRate()>0 && next.getValue().getOWinRate()<1) )
-                {
-                    next.getValue().printBoard();
-                    System.out.println("XWin rate: " + next.getValue().getXWinRate());
-                    System.out.println("OWin rate: " + next.getValue().getOWinRate());
-                }
-
-            }
-            */
 
 
-        /*
-        Iterator<Map.Entry<Integer, State>> it = tree.getEndPoints().entrySet().iterator();
-        System.out.println("Ending states: " + tree.getEndPoints().size());
-        while(it.hasNext())
-        {
-            Map.Entry<Integer, State> next = it.next();
-            next.getValue().printBoard();
-            System.out.println("Times: " + next.getValue().getCount());
-            System.out.println("X win rate = " + next.getValue().getXWinRate());
-            System.out.println("O win rate = " + next.getValue().getOWinRate());
-            next.getValue().printPreviousStates();
-            System.out.println();
-        }
-        */
+
+
         //tree.printStartingStates();
 
         System.out.println("total moves: " + totalmovess);
         System.out.println("number of nodes: " + Tree.getNodes().size());
         System.out.println("Average moves in " + n + " games: " + (double)totalmovess/n);
+        System.out.println("total starting moves: " + tree.getStartPoints().size());
+        System.out.println("total ending moves: " + tree.getEndPoints().size());
 
         System.out.println("X won " + numXwins + " games: " + 100*(double)numXwins/n + "%");
         System.out.println("Average moves when X wins " + (double)totalmovessWhenX/numXwins);
@@ -574,5 +537,6 @@ public class Driver {
         System.out.println("Average moves when O wins " + (double)totalmovessWhenO/numOwins);
         return tree;
     }
+
 }
 

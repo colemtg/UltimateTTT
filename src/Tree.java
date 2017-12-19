@@ -3,9 +3,9 @@ import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 import java.util.*;
 
 public class Tree {
-    private HashSet<Integer> startPoints = new HashSet<>();
-    private HashSet<Integer> endPoints = new HashSet<>();
-    private static HashMap<Integer, State> nodes = new HashMap<>();
+    private HashSet<Integer> startPoints = new HashSet<>(128);
+    private HashSet<Integer> endPoints = new HashSet<>(65536);
+    private static HashMap<Integer, State> nodes = new HashMap<>(4194304);
 
     public void addStartPoints(State input) {
         //System.out.println("Adding start point:");
@@ -98,7 +98,7 @@ public class Tree {
         {
             Integer next = it.next();
             //nodes.get(next).printBoard();
-            State.printBoard(nodes.get(next).getBoard());
+            //State.printBoard(nodes.get(next).getBoard());
             System.out.println(next);
             System.out.println();
         }
@@ -111,7 +111,7 @@ public class Tree {
         while(it.hasNext())
         {
             Integer next = it.next();
-            State.printBoard(nodes.get(next).getBoard());
+            //State.printBoard(nodes.get(next).getBoard());
             //nodes.get(next).printBoard();
             System.out.println();
         }
@@ -124,7 +124,7 @@ public class Tree {
         while(it.hasNext())
         {
             Map.Entry<Integer, State> next = it.next();
-            State.printBoard(next.getValue().getBoard());
+            //State.printBoard(next.getValue().getBoard());
             //next.getValue().printBoard();
             System.out.println();
         }

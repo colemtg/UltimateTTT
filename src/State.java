@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class State implements Comparable<State>{
-    private char[][] board;
+    private int[][] board;
     private double XWinRate = 0;
     private double OWinRate = 0;
     private HashSet<Integer> nextStates = new HashSet<>();
@@ -10,11 +10,11 @@ public class State implements Comparable<State>{
     private int moves = 0;
     private int count = 1;
 
-    public State(char[][] board) {
+    public State(int[][] board) {
         if (board.length != 9 || board[0].length != 9) {
             System.err.println("Game size invalid");
         }
-        this.board = new char[9][9];
+        this.board = new int[9][9];
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 this.board[i][j] = board[i][j];
@@ -23,11 +23,11 @@ public class State implements Comparable<State>{
         }
        // System.out.println("Copied board:");
         //printBoard();
-        hashCode=computeHashCode();
+        hashCode=State.computeHashCode(board);
 
     }
 
-    public void printBoard() {
+    public static void printBoard(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 if (board[i][j] == 2) System.out.print("O ");
@@ -47,6 +47,10 @@ public class State implements Comparable<State>{
         {
             previousStates.add(input.getGoodHashCode());
         }
+        if(previousStates.size()>1)
+        {
+            printPreviousStates();
+        }
     }
 
     public void addNextState(State input)
@@ -65,7 +69,7 @@ public class State implements Comparable<State>{
        // System.out.println(nextStates.size());
     }
 
-    public int computeHashCode()
+    public static int computeHashCode(int[][] board)
     {
         String concat="";
         int numX=0;
@@ -76,7 +80,7 @@ public class State implements Comparable<State>{
             {
                 if(board[i][j]==1) numX++;
                 else if(board[i][j]==1) numY++;
-                concat=concat+Character.toString(board[i][j]);
+                concat=concat+Integer.toString(board[i][j]);
             }
         }
         //return Arrays.deepHashCode(board);
@@ -87,7 +91,7 @@ public class State implements Comparable<State>{
         //return (concat.hashCode()/((numX*numY)+1))*Arrays.deepHashCode(board);
     }
 
-    public char[][] getBoard() {
+    public int[][] getBoard() {
         return board;
     }
 
@@ -135,7 +139,7 @@ public class State implements Comparable<State>{
         while(it.hasNext())
         {
             Integer next = it.next();
-            Tree.getNodes().get(next).printBoard();
+            State.printBoard(Tree.getNodes().get(next).getBoard());
             //System.out.println("Times: " + next.getValue().getCount());
             System.out.println("OWinRate: " + Tree.getNodes().get(next).getOWinRate());
             System.out.println("XWinRate: " + Tree.getNodes().get(next).getXWinRate());
@@ -144,18 +148,21 @@ public class State implements Comparable<State>{
     }
     public void printPreviousStates()
     {
+        System.out.println("Current state:");
+        State.printBoard(this.getBoard());
         Iterator<Integer> it = previousStates.iterator();
         System.out.println("Previous States: " + previousStates.size());
         while(it.hasNext())
         {
             Integer next = it.next();
-            Tree.getNodes().get(next).printBoard();
+            //Tree.getNodes().get(next).printBoard();
+            State.printBoard(Tree.getNodes().get(next).getBoard());
             System.out.println("Times: " + Tree.getNodes().get(next).getCount());
             System.out.println();
         }
     }
 
-    public void setBoard(char[][] board) {
+    public void setBoard(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 this.board[i][j] = board[i][j];

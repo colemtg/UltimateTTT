@@ -97,7 +97,8 @@ public class Tree {
         while(it.hasNext())
         {
             Integer next = it.next();
-            nodes.get(next).printBoard();
+            //nodes.get(next).printBoard();
+            State.printBoard(nodes.get(next).getBoard());
             System.out.println(next);
             System.out.println();
         }
@@ -110,7 +111,8 @@ public class Tree {
         while(it.hasNext())
         {
             Integer next = it.next();
-            nodes.get(next).printBoard();
+            State.printBoard(nodes.get(next).getBoard());
+            //nodes.get(next).printBoard();
             System.out.println();
         }
     }
@@ -122,7 +124,8 @@ public class Tree {
         while(it.hasNext())
         {
             Map.Entry<Integer, State> next = it.next();
-            next.getValue().printBoard();
+            State.printBoard(next.getValue().getBoard());
+            //next.getValue().printBoard();
             System.out.println();
         }
     }
@@ -199,7 +202,7 @@ public class Tree {
 
             }
         }
-        State temp = new State(new char[9][9]);
+        State temp = new State(new int[9][9]);
         addNode(temp);
         Iterator<Integer> it6 = startPoints.iterator();
         double tempO=0;

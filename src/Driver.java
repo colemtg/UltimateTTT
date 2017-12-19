@@ -5,14 +5,15 @@ public class Driver {
     public static void main (String args[])
     {
         Scanner input = new Scanner(System.in);
-        System.out.println("enter number of simulations:");
-        Tree tree = runTests(input.nextInt());
+        //System.out.println("enter number of simulations:");
+        //Tree tree = runTests(input.nextInt());
+
         //State startingState = new State(new int[9][9]);
 
-        State[] states = new State[82];
-        states[0] = new State(new char[9][9]);
-
-
+        //State[] states = new State[82];
+        //states[0] = new State(new char[9][9]);
+        int[][] previous = new int[9][9];
+        int[][] current = new int[9][9];
 
         int row,col;
         int playerX;
@@ -41,12 +42,14 @@ public class Driver {
             playerO=0;
         }
         int targetBox=-1;
-        char[] doneBoxes = new char[9];
+        int[] doneBoxes = new int[9];
         boolean invalid;
         for (int moves=1; moves<81+1; moves++)
         {
             invalid=true;
-            if (Tree.getNodes().containsKey(states[moves - 1].getGoodHashCode()))
+            //if (Tree.getNodes().containsKey(states[moves - 1].getGoodHashCode()))
+            /*
+            if (Tree.getNodes().containsKey(State.computeHashCode(previous)))
             {
                 double maxX=0;
                 Integer codeX=0;
@@ -55,7 +58,8 @@ public class Driver {
                 //Tree.getNodes().get(states[moves-1].getGoodHashCode()).printNextStates();
                // if(moves>1)
                 //{
-                Iterator<Integer> it = Tree.getNodes().get(states[moves - 1].getGoodHashCode()).getNextStates().iterator();
+
+                Iterator<Integer> it = Tree.getNodes().get(State.computeHashCode(previous)).getNextStates().iterator();
                 while (it.hasNext())
                 {
                     Integer next = it.next();
@@ -71,13 +75,15 @@ public class Driver {
                 if(moves % 2 == 0) //O
                 {
                     System.out.println("best move:");
-                    Tree.getNodes().get(codeO).printBoard();
+                    //Tree.getNodes().get(codeO).printBoard();
+                    State.printBoard(Tree.getNodes().get(codeO).getBoard());
                     System.out.println("O winrate: " + Tree.getNodes().get(codeO).getOWinRate());
                 }
                 if(moves % 2 == 1) //X
                 {
                     System.out.println("best move:");
-                    Tree.getNodes().get(codeX).printBoard();
+                    //Tree.getNodes().get(codeX).printBoard();
+                    State.printBoard(Tree.getNodes().get(codeO).getBoard());
                     System.out.println("X winrate: " + Tree.getNodes().get(codeX).getXWinRate());
                 }
                 //}
@@ -86,8 +92,9 @@ public class Driver {
             {
                 System.out.println("new state");
             }
-
-            states[moves-1].printBoard();
+             */
+            //states[moves-1].printBoard();
+                State.printBoard(previous);
             while (invalid) {
                 if (moves % 2 == 0) System.out.println("O Player");
                 else System.out.println("X Player");
@@ -103,27 +110,33 @@ public class Driver {
                     col=getCol(targetBox);
                 else
                 col = input.nextInt()-1;
-                if (col > 8 || row > 8 || states[moves-1].getBoard()[row][col] != 0 ||
+                if (col > 8 || row > 8 || previous[row][col] != 0 ||
                         !inBox(targetBox,row,col) || doneBoxes[whatBox(row,col)]!=0 ) {
                     System.out.println("invalid choice");
                 }
 
                 else
                 {
-                    char[][] temp = states[moves-1].getBoard();
-                    if(moves%2==0) temp[row][col]= 2;
-                    else temp[row][col] = 1;
-                    states[moves] = new State(temp);
+                    for(int i=0; i<previous.length; i++)
+                    {
+                        for(int j=0; j<previous[0].length; j++)
+                        {
+                            current[i][j]=previous[i][j];
+                        }
+                    }
+                   // char[][] temp = previous;
+                    if(moves%2==0) current[row][col]= 2;
+                    else current[row][col] = 1;
                     invalid=false;
                     targetBox = nextBox(row,col);
-                    doneBoxes[whatBox(row,col)] = boxDone(row,col,states[moves-1].getBoard());
+                    doneBoxes[whatBox(row,col)] = boxDone(row,col,current);
                     for(int i=0; i<doneBoxes.length; i++)
                     {
                         System.out.println("Box " + (i+1) + " = " + (doneBoxes[i] == 2 ? "O" : doneBoxes[i] == 1 ? "X" : ""));
                     }
 
                     int k=0;
-                    char[][]checkWinner = new char[3][3];
+                    int[][]checkWinner = new int[3][3];
                     for(int i=0; i<3; i++)
                     {
                         for(int j=0; j<3; j++)
@@ -134,14 +147,16 @@ public class Driver {
                     if(isWinner(checkWinner)==2)
                     {
                         System.out.println("O wins");
-                        states[moves].printBoard();
+                        State.printBoard(current);
+                        //states[moves].printBoard();
                         System.out.println("number of movess: " + moves);
                         moves=82;
                     }
                     else if(isWinner(checkWinner)==1)
                     {
                         System.out.println("X wins");
-                        states[moves].printBoard();
+                        State.printBoard(current);
+                        //states[moves].printBoard();
                         System.out.println("number of movess: " + moves);
                         moves=82;
                     }
@@ -161,28 +176,24 @@ public class Driver {
                     Thread.currentThread().interrupt();
                 }
                 */
+                for(int i=0; i<previous.length; i++)
+                {
+                    for(int j=0; j<previous[0].length; j++)
+                    {
+                        previous[i][j]=current[i][j];
+                    }
+                }
             }
         }
     }
-    public static char boxDone(int row, int col, char[][] state)
+    public static int boxDone(int row, int col, int[][] state)
     {
         return isWinner(box(whatBox(row,col),state));
     }
     //0 for no, 2 for O, 1 for X
-    public static char isWinner(char box[][])
+    public static int isWinner(int box[][])
     {
-        char status=0;
-        /*
-        System.out.println("across");
-        System.out.println(box[0][0] + " " + box[0][1] + " " + box[0][2]);
-        System.out.println(box[1][0] + " " + box[1][1] + " " + box[1][2]);
-        System.out.println(box[2][0] + " " + box[2][1] + " " + box[2][2]);
-
-        System.out.println("down");
-        System.out.println(box[0][0] + " " + box[1][0] + " " + box[0][2]);
-        System.out.println(box[1][0] + " " + box[1][1] + " " + box[1][2]);
-        System.out.println(box[2][0] + " " + box[2][1] + " " + box[2][2]);
-        */
+        int status=0;
 
              if(box[0][0]!=0 && box[0][0]==box[0][1] && box[0][0]==box[0][2]) status=box[0][0];
         else if(box[1][0]!=0 && box[1][0]==box[1][1] && box[1][0]==box[1][2]) status=box[1][0];
@@ -255,10 +266,11 @@ public class Driver {
 
         return box;
     }
-    public static char[][] box(int box,char[][] state)
+    public static int[][] box(int box,int[][] state)
     {
         int rowS=0,colS=0;
-        char[][] output=new char[3][3];
+        int[][] output=new int[3][3];
+        System.out.println("box: " + box);
 
         if(box == 0)
         {
@@ -314,7 +326,7 @@ public class Driver {
                 output[i%3][j%3]=state[i][j];
             }
         }
-        /*System.out.println("col start = " + colS);
+        System.out.println("col start = " + colS);
         System.out.println("row start = " + rowS);
         for(int i=0; i<output.length; i++)
         {
@@ -324,7 +336,7 @@ public class Driver {
             }
             System.out.println();
         }
-        */
+
         return output;
     }
 
@@ -360,11 +372,11 @@ public class Driver {
         int totalmovess=0;
         for (int times = 0; times < n; times++) {
             State[] states = new State[82];
-            states[0] = new State(new char[9][9]);
+            states[0] = new State(new int[9][9]);
 
             int row, col;
             int targetBox = -1;
-            char[] doneBoxes = new char[9];
+            int[] doneBoxes = new int[9];
             boolean invalid;
             int stop =0;
             for (int moves = 1; moves < 81 + 1; moves++) {
@@ -407,8 +419,8 @@ public class Driver {
                     else {
                         //int[][] temp = new int[states[moves-1].getBoard().length][states[moves-1].getBoard()[0].length];
                         //states[moves-1].printBoard();
-                        char[][] temp = states[moves-1].getBoard();
-                        char[][] tempCopy = new char[9][9];
+                        int[][] temp = states[moves-1].getBoard();
+                        int[][] tempCopy = new int[9][9];
 
                         //copy into temp
 
@@ -430,7 +442,7 @@ public class Driver {
                         doneBoxes[whatBox(row, col)] = boxDone(row, col, states[moves - 1].getBoard());
 
                         int k = 0;
-                        char[][] checkWinner = new char[3][3];
+                        int[][] checkWinner = new int[3][3];
                         for (int i = 0; i < 3; i++) {
                             for (int j = 0; j < 3; j++) {
                                 checkWinner[i][j] = doneBoxes[k++];
